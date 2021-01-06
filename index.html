@@ -58,10 +58,13 @@
   <!-- SCRIPT -->
   <script>
     /*
-    Used API
+    old API
     https://www.npoint.io/docs/449ce4d0beb968652d02?fbclid=IwAR14RCaE9UZxsXyAjhAehLeiNgsZTTSTjgcrg_wFBvDRmroEbttjoop-u90
-
     https://api.npoint.io/449ce4d0beb968652d02
+    
+    new:
+    https://www.npoint.io/docs/138f8ab3884352fe5f95
+    https://api.npoint.io/138f8ab3884352fe5f95
     */
 
     //Special code for each user array
@@ -71,7 +74,7 @@
     var pastComments;
     var commentsLenght;
 
-    request.open('GET', 'https://api.npoint.io/449ce4d0beb968652d02/', true)
+    request.open('GET', 'https://api.npoint.io/138f8ab3884352fe5f95', true)
     request.onload = function () {
       // Begin accessing JSON data here
       var data = JSON.parse(this.response)
@@ -85,7 +88,7 @@
       }
     }
     function postComment(name, date, comment) {
-      request.open("POST", 'https://api.npoint.io/449ce4d0beb968652d02', true);
+      request.open("POST", 'https://api.npoint.io/138f8ab3884352fe5f95', true);
       request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 200) {
           var json = JSON.parse(request.responseText);

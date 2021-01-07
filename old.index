@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Comments</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- CSS -->
+  <style>
+    body {
+      text-align: right;
+    }
+
+    .comment {
+      border: 1px grey solid;
+      text-align: right;
+    }
+
+    .datetime {
+      color: grey;
+    }
+
+    .name {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+  <!-- CSS -->
+</head>
+
+<body>
+
+  <section id="form">
+    <input type="text" name="name" id="name" placeholder="name" />
+    <br />
+    <input type="number" name="phone" id="phone" placeholder="phone" />
+    <br />
+    <input type="number" name="code" id="code" placeholder="code" />
+    <br />
+    <button onclick="check()">Sign In</button>
+  </section>
+
+  <section id="comments" style="display: none">
+    <div id="search">
+      <button onclick="searchComment()">Search</button>
+      <input type="text" name="" id="searchInp" placeholder="search.." />
+    </div>
+    <div id="commentSec"></div>
+
+    <textarea name="" id="userComment" cols="30" rows="10"></textarea>
+    <br />
+    <button id="addComment" onclick="comment()">Add Comment</button>
+    <input name="" id="userLink" cols="30" rows="10" placeholder="Add Link"></input>
+    <br />
+  </section>
+
+
+  <!-- SCRIPT -->
+  <script>
+    /*
+    old API
+    https://www.npoint.io/docs/449ce4d0beb968652d02?fbclid=IwAR14RCaE9UZxsXyAjhAehLeiNgsZTTSTjgcrg_wFBvDRmroEbttjoop-u90
+    https://api.npoint.io/449ce4d0beb968652d02
+    
+    new:
+    https://www.npoint.io/docs/138f8ab3884352fe5f95
+    https://api.npoint.io/138f8ab3884352fe5f95
+    */
+
+    //Special code for each user array
+    var codes = [1, 2, 3];
+
+    var request = new XMLHttpRequest()
+    var pastComments;
+    var commentsLenght;
+
+    request.open('GET', 'https://api.npoint.io/138f8ab3884352fe5f95', true)
+    request.onload = function () {
+      // Begin accessing JSON data here
+      var data = JSON.parse(this.response)
+
+      if (request.status >= 200 && request.status < 400) {
+        //  console.log(data)
+        pastComments = data;
+        commentsLenght = Object.keys(pastComments.comments).length;
+      } else {
+        console.log('error')
+      }
+    }
+    function postComment(name, date, comment) {
+      request.open("POST", 'https://api.npoint.io/138f8ab3884352fe5f95', true);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          var json = JSON.parse(request.responseText);
+        }
+      };
+      console.log(pastComments)
+      var data = JSON.parse(JSON.stringify(pastComments))
+      // data["comments"].push({"date":date,"name":name,"comment":comment});
+      dataa = JSON.stringify(data);
+      request.send(dataa);
+    }
+    request.send()
+
+    //Check if the user code is found and all the data is valid
+    function check() {
+      var code = document.getElementById("code").value;
+      var name = document.getElementById("name").value;
+      var phone = document.getElementById("phone").value;
+      if (code != "" && name != "" && phone != "") {
+        const isCode = codes.find((e) => e == code);
+        if (isCode != undefined) {
+          document.getElementById("form").style.display = "none";
+          document.getElementById("comments").style.display = "block";
+          displayComments()
+        } else {
+          alert("try another code");
+        }
+      } else {
+        alert("enter values");
+      }
+    }
+
+    //Add comment
+    function comment() {
+      var name = document.getElementById("name").value;
+      var userComment = document.getElementById("userComment").value;
+      var userLink = document.getElementById("userLink").value;
+
+
+      //Reset comment textarea
+      document.getElementById("userComment").value = "";
+      var date;
+      // If comment is not empty, add comment
+      if (userComment != "") {
+        document.getElementById("commentSec").innerHTML +=
+          `
+                <div class="comment">
+                  <span class='datetime'></span>
+                <span class="name">` +
+          name +
+          `    
+                </span>
+                <p>` +
+          userComment +
+          `</p>
+          <p>`+ userLink + `</p>
+                </div > <br>`;
+        date = getTime();
+        console.log(times[date])
+        pastComments.comments.push({ 'date': times[date], 'name': name, 'comment': userComment, 'link': userLink });
+        console.log(pastComments)
+
+      } else {
+        alert("enter a comment");
+      }
+      postComment(name, times[date], userComment, userLink)
+    }
+
+    function displayComments() {
+      var com = "";
+      for (var i = 0; i < commentsLenght; i++) {
+        com +=
+          `
+                    <div class="comment">
+                      <span class='datetime'>` +
+          pastComments.comments[i].date +
+          `</span>
+                    <span class="name">` +
+          pastComments.comments[i].name +
+          `
+                    </span>
+                    <p>` +
+          pastComments.comments[i].comment +
+          `</p><p>` + pastComments.comments[i].link + `</p>
+                    </div > <br>`;
+        times.push(pastComments.comments[i].date);
+        document.getElementById("commentSec").innerHTML = com;
+      }
+    }
+
+    function searchComment() {
+      var comment = document.getElementById("searchInp").value;
+      var temp = "";
+      for (var j = 0; j < commentsLenght; j++) {
+        var commentLower = pastComments.comments[j].comment.toLowerCase();
+        var searchLower = comment.toLowerCase();
+
+        //if search box is empty, display all
+        if (comment == "") {
+          displayComments();
+        } else if (commentLower.includes(searchLower) && comment != "") {
+          temp +=
+            `
+                        <div class="comment">
+                          <span class='datetime'>` +
+            pastComments.comments[j].date +
+            `</span>
+                        <span class="name">` +
+            pastComments.comments[j].name +
+            `
+                        </span>
+                        <p>` +
+            pastComments.comments[j].comment +
+            `</p>` + pastComments.comments[j].link + `</p>
+                        </div > <br>`;
+          document.getElementById("commentSec").innerHTML = temp;
+        }
+      }
+    }
+
+    //number of comment
+    var count;
+    var times = [];
+
+    function getTime() {
+      count = commentsLenght;
+      var d = new Date();
+      //get time
+      var dateTime =
+        String(d.getHours()) +
+        ":" +
+        String(d.getMinutes()) +
+        ":" +
+        String(d.getSeconds()) +
+        "-" +
+        String(d.getDate()) +
+        "/" +
+        String(d.getMonth() + 1) +
+        "/" +
+        String(d.getFullYear());
+      document.getElementsByClassName("datetime")[count].innerHTML = dateTime;
+      times.push(dateTime);
+      // next number of comment
+      count++;
+      return count - 1;
+    }
+  </script>
+  <!-- END SCRIPT -->
+</body>
+
+</html>

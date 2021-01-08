@@ -175,15 +175,16 @@
     }
 
     //Scroll down when first opened only
-    var flag = { val: "false" };
-    function firstRun(val) {
-      flag.val = val;
-      // to stop variable from changing after first time change
-      Object.freeze(flag)
-    }
+    // var flag = { val: "false" };
+    // function firstRun(val) {
+    //   flag.val = val;
+    //   // to stop variable from changing after first time change
+    //   Object.freeze(flag)
+    // }
 
+    var flag = true;
+    var newLength = 0;
     (function () {
-
       request.open('GET', ' https://api.npoint.io/138f8ab3884352fe5f95', true)
       request.onload = function () {
         // Begin accessing JSON data here
@@ -192,25 +193,35 @@
         if (request.status >= 200 && request.status < 400) {
           pastComments = data;
           commentsLenght = Object.keys(pastComments.comments).length;
-          flag.val = true;
+          // flag.val = true;
+          if (flag == true ) {
+            displayComments();
+            scrollDown();
+            flag = false;
+          }
+          if(commentsLenght == newLength+1 ){
+            displayComments();
+            scrollDown();
+          }
+          newLength = commentsLenght;
 
         } else {
           console.log('error')
         }
       }
-      request.send()
+      request.send();
 
-      setTimeout(arguments.callee, 3000);
+      setTimeout(arguments.callee, 2000);
       var search = document.getElementById("searchInp").value;
       if (search == '') {
         displayComments()
 
         //Scroll down when first opened only
-        if (flag.val == true) {
-          scrollDown();
-          flag.val = false;
-          firstRun(flag);
-        }
+        // if (flag.val == true) {
+        //   scrollDown();
+        //   flag.val = false;
+        //   firstRun(flag);
+        // }
       }
     })();
 

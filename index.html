@@ -200,7 +200,7 @@
       }
       request.send()
 
-      setTimeout(arguments.callee, 2000);
+      setTimeout(arguments.callee, 3000);
       var search = document.getElementById("searchInp").value;
       if (search == '') {
         displayComments()
@@ -212,8 +212,8 @@
           firstRun(flag);
         }
       }
-
     })();
+
 
     function postComment(name, date, comment) {
       request.open("POST", ' https://api.npoint.io/138f8ab3884352fe5f95', true);
@@ -222,9 +222,9 @@
           var json = JSON.parse(request.responseText);
         }
       };
-      var data = JSON.parse(JSON.stringify(pastComments))
-      dataa = JSON.stringify(data);
-      request.send(dataa);
+      var datapost = JSON.parse(JSON.stringify(pastComments))
+      datapost = JSON.stringify(datapost);
+      request.send(datapost);
     }
 
     function deleteComment() {
@@ -268,7 +268,6 @@
                 <button onclick="deleteComment()">Delete Comments</button>
                 <input type="text" id="delete" placeholder="user code">
               `;
-
           }
         } else {
           document.getElementById("signWarning").innerHTML = "try another code";
@@ -281,14 +280,15 @@
 
     //Add comment
     function comment() {
+      var date = getTime();
       var name = document.getElementById("name").value;
       var code = document.getElementById("code").value;
       var userComment = document.getElementById("userComment").value;
       var userLink = document.getElementById("userLink").value;
 
       code = codeChange(code);
-      var date;
       // If comment is not empty, add comment
+
       var search = document.getElementById("searchInp").value;
       if (userComment != "" && search == '') {
         document.getElementById("commentSec").innerHTML +=
@@ -308,21 +308,18 @@
           `</p>
                   <a target="_blank" href="https://`+ userLink + `">` + userLink + `</a>
                 </div > `;
-        date = getTime();
-        pastComments.comments.push({ 'date': times[date], 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
+        pastComments.comments.push({ 'date': date, 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
         clearInput();
 
       } else if (search != '' && userComment != "") {
-        var dat = getTime();
-        pastComments.comments.push({ 'date': times[dat], 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
+        pastComments.comments.push({ 'date': date, 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
         clearInput();
         searchComment();
       }
       else {
         alert("enter a comment");
       }
-      postComment(name, times[date], userComment, userLink)
-
+      postComment(name, date, userComment, userLink);
       scrollDown();
     }
 
@@ -352,7 +349,36 @@
           `</p>
           <a target="_blank" href="https://`+ pastComments.comments[i].link + `">` + pastComments.comments[i].link + `</a>
                     </div > `;
-        times.push(pastComments.comments[i].date);
+
+        document.getElementById("commentSec").innerHTML = com;
+      }
+    }
+
+    function display() {
+      var com = "";
+      if (commentsLenght == 0) {
+        document.getElementById("commentSec").innerHTML = '';
+      }
+      for (var i = 0; i < commentsLenght; i++) {
+        com +=
+          `
+                    <div class="comment">
+                      <span class='datetime'>` +
+          pastComments.comments[i].date +
+          `</span>
+                    <span class="name">` +
+          pastComments.comments[i].name +
+          `
+                    </span>
+                    <span class="code">` +
+          pastComments.comments[i].code +
+          `
+                    </span>
+                    <p>` +
+          pastComments.comments[i].comment +
+          `</p>
+          <a target="_blank" href="https://`+ pastComments.comments[i].link + `">` + pastComments.comments[i].link + `</a>
+                    </div > `;
         document.getElementById("commentSec").innerHTML = com;
       }
     }
@@ -394,8 +420,8 @@
     }
 
     //number of comment
-    var count;
-    var times = [];
+    // var count;
+    // var times = [];
 
     function getTime() {
       count = commentsLenght;
@@ -413,14 +439,15 @@
         String(d.getMonth() + 1) +
         "/" +
         String(d.getFullYear());
-      var search = document.getElementById("searchInp").value;
-      if (search == "") {
-        document.getElementsByClassName("datetime")[count].innerHTML = dateTime;
-      }
-      times.push(dateTime);
+      // var search = document.getElementById("searchInp").value;
+      // if (search == "") {
+      //   document.getElementsByClassName("datetime")[count].innerHTML = dateTime;
+      // }
+      // times.push(dateTime);
       // next number of comment
-      count++;
-      return count - 1;
+      // count++;
+      // return count - 1;
+      return dateTime;
     }
 
     function logout() {

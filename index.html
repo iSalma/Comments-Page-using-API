@@ -48,8 +48,20 @@
     }
 
     #addSec,
-    #deleteSec,#search {
+    #deleteSec,
+    #search {
       margin: 5px 0px 10px 0px;
+    }
+
+    #signWarning {
+      color: red;
+    }
+
+
+    #userLink {
+      display: block !important;
+      margin-bottom: 10px;
+      margin-left: auto;
     }
   </style>
   <!-- CSS -->
@@ -59,18 +71,24 @@
   <section id="main">
     <!-- Sign in form -->
     <section id="form">
-      <input type="text" name="name" id="name" placeholder="name" />
-      <br />
-      <input type="number" name="phone" id="phone" placeholder="phone" />
-      <br />
-      <input type="number" name="code" id="code" placeholder="code" />
-      <br />
-      <button onclick="check()">Sign In</button>
+      <div id="formInputs" style="display: none">
+        <input type="text" name="name" id="name" placeholder="name" />
+        <br />
+        <input type="password" name="code" id="code" placeholder="code" />
+        <br />
+        <button onclick="check()">Sign In</button>
+      </div>
+      <div id="signButton">To comment sign in first
+        <button onclick="showForm()">Sign in</button>
+      </div>
+      <p id="signWarning"></p>
+
     </section>
 
     <!-- Comments area -->
-    <section id="comments" style="display: none">
+    <section id="comments">
       <div id="search">
+        <button onclick="clearSearch()">Clear</button>
         <button onclick="searchComment()">Search</button>
         <input type="text" name="" id="searchInp" placeholder="search.." />
       </div>
@@ -82,12 +100,21 @@
         <!-- comments added by users -->
       </div>
 
-      <textarea name="" id="userComment" cols="50" rows="3" placeholder="Write a comment.."></textarea>
-      <br />
+      <div id="scrollSec">
+        <button onclick="scrollUp()">Scroll Up</button>
+        <button onclick="scrollDown()">Scroll Down</button>
+      </div>
+      <div id="loggedInUser" style="display: none">
+        <div id="addSec">
+          <textarea name="" id="userComment" cols="50" rows="8" placeholder="Write a comment.."></textarea>
+          <br />
+          <input name="" id="userLink" placeholder="Add Link"></input>
+          <button id="addComment" onclick="comment()">Add Comment</button>
+        </div>
 
-      <div id="addSec">
-        <button id="addComment" onclick="comment()">Add Comment</button>
-        <input name="" id="userLink" placeholder="Add Link"></input>
+        <div id="logoutSec">
+          <button id="logout" onclick="logout()">Logout</button>
+        </div>
       </div>
 
     </section>
@@ -109,6 +136,15 @@
     // first number in the codes array is the admin code
     var codes = [1, 2, 3];
 
+    // Shows edited special code
+    function codeChange(code) {
+      return code * 24 - 5;
+    }
+    //to sign in
+    function showForm() {
+      document.getElementById('formInputs').style.display = "block";
+      document.getElementById('signButton').style.display = "none";
+    }
     var request = new XMLHttpRequest()
     var pastComments;
     var commentsLenght;
@@ -123,9 +159,32 @@
     }
     clearInput();
 
+    function clearSearch() {
+      document.getElementById("searchInp").value = '';
+      // scrollDown();
+    }
+
+    function scrollUp() {
+      var elem = document.getElementById('commentSec');
+      elem.scrollTop = 0;
+    }
+
+    function scrollDown() {
+      var elem = document.getElementById('commentSec');
+      elem.scrollTop = elem.scrollHeight;
+    }
+
+    //Scroll down when first opened only
+    var flag = { val: "false" };
+    function firstRun(val) {
+      flag.val = val;
+      // to stop variable from changing after first time change
+      Object.freeze(flag)
+    }
+
     (function () {
 
-      request.open('GET', ' https://api.npoint.io/449ce4d0beb968652d02', true)
+      request.open('GET', ' https://api.npoint.io/138f8ab3884352fe5f95', true)
       request.onload = function () {
         // Begin accessing JSON data here
         var data = JSON.parse(this.response)
@@ -133,6 +192,7 @@
         if (request.status >= 200 && request.status < 400) {
           pastComments = data;
           commentsLenght = Object.keys(pastComments.comments).length;
+          flag.val = true;
 
         } else {
           console.log('error')
@@ -144,14 +204,19 @@
       var search = document.getElementById("searchInp").value;
       if (search == '') {
         displayComments()
+
+        //Scroll down when first opened only
+        if (flag.val == true) {
+          scrollDown();
+          flag.val = false;
+          firstRun(flag);
+        }
       }
 
     })();
 
-
-
     function postComment(name, date, comment) {
-      request.open("POST", ' https://api.npoint.io/449ce4d0beb968652d02', true);
+      request.open("POST", ' https://api.npoint.io/138f8ab3884352fe5f95', true);
       request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 200) {
           var json = JSON.parse(request.responseText);
@@ -162,15 +227,15 @@
       request.send(dataa);
     }
 
-
     function deleteComment() {
       var afterDelete = [];
       var index = document.getElementById("delete").value;
+
       for (var i = 0; i < pastComments.comments.length; i++) {
         if (pastComments.comments[i].code != index) afterDelete.push(pastComments.comments[i]);
       }
       pastComments.comments = afterDelete;
-      request.open("POST", ' https://api.npoint.io/449ce4d0beb968652d02', true);
+      request.open("POST", ' https://api.npoint.io/138f8ab3884352fe5f95', true);
       request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 200) {
           var json = JSON.parse(request.responseText);
@@ -179,21 +244,23 @@
       var data = JSON.parse(JSON.stringify(pastComments))
       dataa = JSON.stringify(data);
       request.send(dataa);
-      document.getElementById("delete").value='';
+      document.getElementById("delete").value = '';
+
+      // scrollDown();
     }
 
     //Check if the user code is found and all the data is valid
     function check() {
       var code = document.getElementById("code").value;
       var name = document.getElementById("name").value;
-      var phone = document.getElementById("phone").value;
 
-      if (code != "" && name != "" && phone != "") {
+      if (code != "" && name != "") {
         const isCode = codes.find((e) => e == code);
         if (isCode != undefined) {
           document.getElementById("form").style.display = "none";
-          document.getElementById("comments").style.display = "block";
+          document.getElementById("loggedInUser").style.display = "block";
           displayComments();
+          scrollDown();
 
           if (code == codes[0]) {
             document.getElementById("deleteSec").innerHTML =
@@ -204,13 +271,12 @@
 
           }
         } else {
-          alert("try another code");
+          document.getElementById("signWarning").innerHTML = "try another code";
         }
       } else {
-        alert("enter values");
+        document.getElementById("signWarning").innerHTML = "enter all values";
       }
     }
-
 
 
     //Add comment
@@ -220,6 +286,7 @@
       var userComment = document.getElementById("userComment").value;
       var userLink = document.getElementById("userLink").value;
 
+      code = codeChange(code);
       var date;
       // If comment is not empty, add comment
       var search = document.getElementById("searchInp").value;
@@ -239,7 +306,7 @@
                   <p>` +
           userComment +
           `</p>
-                  <p>`+ userLink + `</p>
+                  <a target="_blank" href="https://`+ userLink + `">` + userLink + `</a>
                 </div > `;
         date = getTime();
         pastComments.comments.push({ 'date': times[date], 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
@@ -255,11 +322,14 @@
         alert("enter a comment");
       }
       postComment(name, times[date], userComment, userLink)
+
+      scrollDown();
     }
+
 
     function displayComments() {
       var com = "";
-      if(commentsLenght == 0){
+      if (commentsLenght == 0) {
         document.getElementById("commentSec").innerHTML = '';
       }
       for (var i = 0; i < commentsLenght; i++) {
@@ -279,7 +349,8 @@
                     </span>
                     <p>` +
           pastComments.comments[i].comment +
-          `</p><p>` + pastComments.comments[i].link + `</p>
+          `</p>
+          <a target="_blank" href="https://`+ pastComments.comments[i].link + `">` + pastComments.comments[i].link + `</a>
                     </div > `;
         times.push(pastComments.comments[i].date);
         document.getElementById("commentSec").innerHTML = com;
@@ -289,8 +360,8 @@
     function searchComment() {
       var search = document.getElementById("searchInp").value;
       var temp = "";
-      for (var j = 0; j < commentsLenght; j++) {
-        var commentLower = pastComments.comments[j].comment.toLowerCase();
+      for (var i = 0; i < commentsLenght; i++) {
+        var commentLower = pastComments.comments[i].comment.toLowerCase();
         var searchLower = search.toLowerCase();
 
         //if search box is empty, display all
@@ -299,25 +370,27 @@
         } else if (commentLower.includes(searchLower) && search != "") {
           temp +=
             `
-                        <div class="comment">
-                          <span class='datetime'>` +
-            pastComments.comments[j].date +
+                    <div class="comment">
+                      <span class='datetime'>` +
+            pastComments.comments[i].date +
             `</span>
-                        <span class="name">` +
-            pastComments.comments[j].name +
+                    <span class="name">` +
+            pastComments.comments[i].name +
             `
-                        </span>
-                        <span class="code">` +
-            pastComments.comments[j].code +
+                    </span>
+                    <span class="code">` +
+            pastComments.comments[i].code +
             `
-                        </span>
-                        <p>` +
-            pastComments.comments[j].comment +
-            `</p>` + pastComments.comments[j].link + `</p>
-                        </div > `;
+                    </span>
+                    <p>` +
+            pastComments.comments[i].comment +
+            `</p>
+          <a target="_blank" href="https://`+ pastComments.comments[i].link + `">` + pastComments.comments[i].link + `</a>
+                    </div > `;
           document.getElementById("commentSec").innerHTML = temp;
         }
       }
+      // scrollDown();
     }
 
     //number of comment
@@ -349,6 +422,11 @@
       count++;
       return count - 1;
     }
+
+    function logout() {
+      location.reload();
+    }
+
   </script>
   <!-- END SCRIPT -->
 </body>

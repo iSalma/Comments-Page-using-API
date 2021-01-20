@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Comments</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- CSS -->
+  <style>
+    body {
+      text-align: right;
+    }
+
+    .commentsContainer {
+      /*Change all comments container hight*/
+      height: 300px;
+      overflow-y: scroll;
+      border: 2px solid grey;
+      margin: 10px 0px 10px 0px;
+    }
+
+    /*Change single comment container width and height*/
+    #userComment {
+      width: 100%;
+      height: 70px;
+      margin: 5px 0px 10px 0px;
+    }
+
+    .comment {
+      border: 1px grey solid;
+      text-align: right;
+      margin: 5px;
+      padding: 10px;
+      overflow: auto;
+      /* white-space: nowrap; */
+    }
+
+    .datetime {
+      color: grey;
+    }
+
+    .name {
+      color: green;
+      font-weight: bold;
+    }
+
+    .code {
+      color: rgb(247, 142, 21);
+    }
+
+
+    @media screen and (max-width: 450px) {
+      #userComment {
+        height: 35px;
+        margin: auto;
+        width: 85%;
+      }
+
+      .comment {
+        margin: 0px;
+        padding: 0px;
+      }
+
+      .commentsContainer {
+        width: 85%;
+        margin: auto;
+      }
+    }
+
+    #main {
+      margin: 10px;
+    }
+
+    #addSec,
+    #deleteSec,
+    #search {
+      margin: 5px 0px 10px 0px;
+    }
+
+    #signWarning, #commentWarn {
+      color: red;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+
+    #userLink {
+      display: block !important;
+      margin-bottom: 10px;
+      margin-left: auto;
+    }
+  </style>
+  <!-- CSS -->
+</head>
+
+<body>
+  <section id="main">
+    <!-- Sign in form -->
+    <section id="form">
+      <div id="formInputs" style="display: none">
+        <input type="text" name="name" id="name" placeholder="name" />
+        <br />
+        <input type="password" name="code" id="code" placeholder="code" />
+        <br />
+        <button onclick="check()">Sign In</button>
+      </div>
+      <div id="signButton">To comment sign in first
+        <button onclick="showForm()">Sign in</button>
+      </div>
+      <p id="signWarning"></p>
+
+    </section>
+
+    <!-- Comments area -->
+    <section id="comments">
+      <div id="search">
+        <button onclick="clearSearch()">Clear</button>
+        <button onclick="searchComment()">Search</button>
+        <input type="text" name="" id="searchInp" placeholder="search.." />
+      </div>
+      <div id="deleteSec">
+        <!-- delete comments by user code -->
+      </div>
+
+      <div class="commentsContainer" id="commentSec">
+        <!-- comments added by users -->
+      </div>
+
+      <div id="scrollSec">
+        <button onclick="scrollUp()">Scroll Up</button>
+        <button onclick="scrollDown()">Scroll Down</button>
+      </div>
+      <div id="loggedInUser" style="display: none">
+        <div id="addSec">
+          <textarea name="" id="userComment" placeholder="Write a comment.."></textarea>
+          <br />
+          <input name="" id="userLink" placeholder="Add Link"></input>
+          <p id="commentWarn"></p>
+          <button id="addComment" onclick="comment()">Add Comment</button>
+        </div>
+
+        <div id="logoutSec">
+          <button id="logout" onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+    </section>
+  </section>
+
+  <!-- SCRIPT -->
+  <script>
+
+    //Special code for each user array
+    // first number in the codes array is the admin code
+    var codes = [1, 2, 3];
+
+    var apiURL = 'https://api.npoint.io/4fa16054d120022712f9';
+
+    // Shows edited special code
+    function codeChange(code) {
+      return code * 24 - 5;
+    }
+    //to sign in
+    function showForm() {
+      document.getElementById('formInputs').style.display = "block";
+      document.getElementById('signButton').style.display = "none";
+    }
+    var request = new XMLHttpRequest()
+    var pastComments;
+    var commentsLenght;
+
+    function clearInput() {
+      //Reset comment textarea
+      document.getElementById("userComment").value = "";
+      //reset search input
+      document.getElementById("searchInp").value = '';
+      //reset link input
+      document.getElementById("userLink").value = '';
+    }
+    clearInput();
+
+    function clearSearch() {
+      document.getElementById("searchInp").value = '';
+      // scrollDown();
+    }
+
+    function scrollUp() {
+      var elem = document.getElementById('commentSec');
+      elem.scrollTop = 0;
+    }
+
+    function scrollDown() {
+      var elem = document.getElementById('commentSec');
+      elem.scrollTop = elem.scrollHeight;
+    }
+
+    var flag = true;
+    var newLength = 0;
+    (function () {
+      request.open('GET', apiURL, true)
+      request.onload = function () {
+        // Begin accessing JSON data here
+        var data = JSON.parse(this.response)
+
+        if (request.status >= 200 && request.status < 400) {
+          pastComments = data;
+          commentsLenght = Object.keys(pastComments.comments).length;
+          // flag.val = true;
+          if (flag == true) {
+            displayComments();
+            scrollDown();
+            flag = false;
+          }
+          if (commentsLenght == newLength + 1) {
+            displayComments();
+            scrollDown();
+          }
+          newLength = commentsLenght;
+
+        } else {
+          console.log('error')
+        }
+      }
+      request.send();
+
+      setTimeout(arguments.callee, 2000);
+      var search = document.getElementById("searchInp").value;
+      if (search == '') {
+        displayComments()
+
+      }
+    })();
+
+
+    function postComment(name, date, comment) {
+      request.open("POST", apiURL, true);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          var json = JSON.parse(request.responseText);
+        }
+      };
+      var datapost = JSON.parse(JSON.stringify(pastComments))
+      datapost = JSON.stringify(datapost);
+      request.send(datapost);
+    }
+
+    function deleteComment() {
+      var afterDelete = [];
+      var index = document.getElementById("delete").value;
+
+      for (var i = 0; i < pastComments.comments.length; i++) {
+        if (pastComments.comments[i].code != index) afterDelete.push(pastComments.comments[i]);
+      }
+      pastComments.comments = afterDelete;
+      request.open("POST", apiURL, true);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          var json = JSON.parse(request.responseText);
+        }
+      };
+      var data = JSON.parse(JSON.stringify(pastComments))
+      dataa = JSON.stringify(data);
+      request.send(dataa);
+      document.getElementById("delete").value = '';
+
+      // scrollDown();
+    }
+
+    //Check if the user code is found and all the data is valid
+    function check() {
+      var code = document.getElementById("code").value;
+      var name = document.getElementById("name").value;
+
+      if (code != "" && name != "") {
+        const isCode = codes.find((e) => e == code);
+        if (isCode != undefined) {
+          document.getElementById("form").style.display = "none";
+          document.getElementById("loggedInUser").style.display = "block";
+          displayComments();
+          scrollDown();
+
+          if (code == codes[0]) {
+            document.getElementById("deleteSec").innerHTML =
+              `
+                <button onclick="deleteComment()">Delete Comments</button>
+                <input type="text" id="delete" placeholder="user code">
+              `;
+          }
+        } else {
+          document.getElementById("signWarning").innerHTML = "try another code";
+        }
+      } else {
+        document.getElementById("signWarning").innerHTML = "enter all values";
+      }
+    }
+
+
+    //Add comment
+    function comment() {
+      var date = getTime();
+      var name = document.getElementById("name").value;
+      var code = document.getElementById("code").value;
+      var userComment = document.getElementById("userComment").value;
+      var userLink = document.getElementById("userLink").value;
+
+      code = codeChange(code);
+
+      // If comment is not empty, add comment
+      var search = document.getElementById("searchInp").value;
+      if (userComment != "" && search == '') {
+        document.getElementById("commentSec").innerHTML +=
+          `
+                <div class="comment">
+                  <span class='datetime'>`+ date + `</span>
+                  <span class="name">` +
+          name +
+          `    
+                  </span>
+                  <span class="code">` +
+          code +
+          `    
+                  </span> 
+                  <p>` +
+          userComment +
+          `</p>
+                  <a target="_blank" href="https://`+ userLink + `">` + userLink + `</a>
+                </div > `;
+        pastComments.comments.push({ 'date': date, 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
+        clearInput();
+        document.getElementById("commentWarn").innerHTML = '';
+
+
+      } else if (search != '' && userComment != "") {
+        pastComments.comments.push({ 'date': date, 'name': name, 'comment': userComment, 'link': userLink, 'code': code });
+        clearInput();
+        searchComment();
+        document.getElementById("commentWarn").innerHTML = '';
+      }
+      else {
+        document.getElementById("commentWarn").innerHTML = 'Enter a comment.';
+      }
+      postComment(name, date, userComment, userLink);
+      scrollDown();
+    }
+
+
+    function displayComments() {
+      var com = "";
+      if (commentsLenght == 0) {
+        document.getElementById("commentSec").innerHTML = '';
+      }
+      for (var i = 0; i < commentsLenght; i++) {
+        com +=
+          `
+                    <div class="comment">
+                      <span class='datetime'>` +
+          pastComments.comments[i].date +
+          `</span>
+                    <span class="name">` +
+          pastComments.comments[i].name +
+          `
+                    </span>
+                    <span class="code">` +
+          pastComments.comments[i].code +
+          `
+                    </span>
+                    <p>` +
+          pastComments.comments[i].comment +
+          `</p>
+          <a target="_blank" href="https://`+ pastComments.comments[i].link + `">` + pastComments.comments[i].link + `</a>
+                    </div > `;
+
+        document.getElementById("commentSec").innerHTML = com;
+      }
+    }
+
+
+    function searchComment() {
+      var search = document.getElementById("searchInp").value;
+      var temp = "";
+      for (var i = 0; i < commentsLenght; i++) {
+        var commentLower = pastComments.comments[i].comment.toLowerCase();
+        var searchLower = search.toLowerCase();
+
+        //if search box is empty, display all
+        if (search == "") {
+          displayComments();
+        } else if (commentLower.includes(searchLower) && search != "") {
+          temp +=
+            `
+                    <div class="comment">
+                      <span class='datetime'>` +
+            pastComments.comments[i].date +
+            `</span>
+                    <span class="name">` +
+            pastComments.comments[i].name +
+            `
+                    </span>
+                    <span class="code">` +
+            pastComments.comments[i].code +
+            `
+                    </span>
+                    <p>` +
+            pastComments.comments[i].comment +
+            `</p>
+          <a target="_blank" href="https://`+ pastComments.comments[i].link + `">` + pastComments.comments[i].link + `</a>
+                    </div > `;
+          document.getElementById("commentSec").innerHTML = temp;
+        }
+      }
+    }
+
+
+    function getTime() {
+      count = commentsLenght;
+      var d = new Date();
+      //get time
+      var dateTime =
+        String(d.getHours()) +
+        ":" +
+        String(d.getMinutes()) +
+        ":" +
+        String(d.getSeconds()) +
+        "-" +
+        String(d.getDate()) +
+        "/" +
+        String(d.getMonth() + 1) +
+        "/" +
+        String(d.getFullYear());
+      return dateTime;
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+  </script>
+  <!-- END SCRIPT -->
+</body>
+
+</html>

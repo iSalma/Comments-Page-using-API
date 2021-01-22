@@ -149,10 +149,12 @@
   </section>
 
       <a href="twitter://user?screen_name=username">twitter</a>
-    <a href="chrome://">chrome</a>
+      <a href="googlechrome://navigate?url=google.com"> chrome</a>
+
   <!-- SCRIPT -->
   <script>
 
+    window.open("googlechrome://navigate?url=" + "google.com","_system");
 
     var isSafari = /constructor/i.test(window.HTMLElement) ||
       (function (p) {

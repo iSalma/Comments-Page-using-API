@@ -78,7 +78,8 @@
       margin: 5px 0px 10px 0px;
     }
 
-    #signWarning, #commentWarn {
+    #signWarning,
+    #commentWarn {
       color: red;
       font-weight: bold;
       font-size: 20px;
@@ -148,23 +149,36 @@
     </section>
   </section>
 
-      <a href="twitter://user?screen_name=username">twitter</a>
-      <a href="googlechrome://navigate?url=google.com"> chrome</a>
-      <a href="googlechrome://www.google.com"> chrome2</a>
-      <a href="chrome://www.google.com"> chrome3</a>
-      <a href="chrome://navigate?url=google.com"> chrome4</a>
+  <button id="copyBtn" onclick="copyURL()">Copy URL</button>
 
   <!-- SCRIPT -->
   <script>
-
-    window.open("googlechrome://navigate?url=" + "google.com","_system");
 
     var isSafari = /constructor/i.test(window.HTMLElement) ||
       (function (p) {
         return p.toString() === "[object SafariRemoteNotification]";
       })(!window['safari'] ||
         (typeof safari !== 'undefined' && safari.pushNotification));
-    
+
+
+    function copyTextToClipboard(text) {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copying text command was ' + msg);
+      } catch (err) {
+        console.log('Oops, unable to copy');
+      }
+      document.body.removeChild(textArea);
+    }
+    function copyURL() {
+      copyTextToClipboard(window.location.href);
+    }
+
     //Special code for each user array
     // first number in the codes array is the admin code
     var codes = [1, 2, 3];

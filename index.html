@@ -164,7 +164,7 @@
       })(!window['safari'] ||
         (typeof safari !== 'undefined' && safari.pushNotification));
 
-    if (isSafari == true) {
+    if (!isSafari == true) {
       document.getElementById('main').style.display = "none";
       document.getElementById('isSafari').style.display = "block";
     }

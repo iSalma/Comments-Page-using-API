@@ -153,38 +153,67 @@
     <p>Please use Google Chrome browser</p>
     <button id="copyBtn" onclick="copyURL()">Copy website URL</button>
     <button>Download Chrome</button>
+    <br>
+    <input type="text" name="" id="copyArea" style="width:0px; height: 0px;   border: none;">
   </section>
 
   <!-- SCRIPT -->
   <script>
 
     var isSafari;
-    if ( navigator.userAgent.match(/iPhone/i)){
+    if (navigator.userAgent.match(/iPhone/i)) {
       isSafari = true;
     }
 
-    if (isSafari == true) {
+    if (!isSafari == true) {
       document.getElementById('main').style.display = "none";
       document.getElementById('isSafari').style.display = "block";
     }
 
-    function copyTextToClipboard(text) {
-      var textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        var successful = document.execCommand('copy');
-        var msg = successful ? 'successful' : 'unsuccessful';
-        console.log('Copying text command was ' + msg);
-      } catch (err) {
-        console.log('Oops, unable to copy');
-      }
-      document.body.removeChild(textArea);
+
+    function copy(el) {
+      var oldContentEditable = el.contentEditable,
+        oldReadOnly = el.readOnly,
+        range = document.createRange();
+
+      el.contentEditable = true;
+      el.readOnly = false;
+      range.selectNodeContents(el);
+
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(range);
+
+      el.setSelectionRange(0, 999999); // A big number, to cover anything that could be inside the element.
+
+      el.contentEditable = oldContentEditable;
+      el.readOnly = oldReadOnly;
+
+      document.execCommand('copy');
     }
     function copyURL() {
-      copyTextToClipboard(window.location.href);
+      document.getElementById("copyArea").value = window.location.href;
+      var el = document.getElementById("copyArea")
+      copy(el);
     }
+
+    // function copyTextToClipboard(text) {
+    //   var textArea = document.createElement("textarea");
+    //   textArea.value = text;
+    //   document.body.appendChild(textArea);
+    //   textArea.select();
+    //   try {
+    //     var successful = document.execCommand('copy');
+    //     var msg = successful ? 'successful' : 'unsuccessful';
+    //     console.log('Copying text command was ' + msg);
+    //   } catch (err) {
+    //     console.log('Oops, unable to copy');
+    //   }
+    //   document.body.removeChild(textArea);
+    // }
+    // function copyURL() {
+    //   copyTextToClipboard(window.location.href);
+    // }
 
     //Special code for each user array
     // first number in the codes array is the admin code

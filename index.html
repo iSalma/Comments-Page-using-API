@@ -158,11 +158,10 @@
   <!-- SCRIPT -->
   <script>
 
-    var isSafari = /constructor/i.test(window.HTMLElement) ||
-      (function (p) {
-        return p.toString() === "[object SafariRemoteNotification]";
-      })(!window['safari'] ||
-        (typeof safari !== 'undefined' && safari.pushNotification));
+    var isSafari;
+    if ( navigator.userAgent.match(/iPhone/i)){
+      isSafari = true;
+    }
 
     if (isSafari == true) {
       document.getElementById('main').style.display = "none";

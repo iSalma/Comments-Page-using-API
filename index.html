@@ -149,7 +149,11 @@
     </section>
   </section>
 
-  <button id="copyBtn" onclick="copyURL()">Copy URL</button>
+  <section id="isSafari" style="display: none;">
+    <p>Please use Google Chrome browser</p>
+    <button id="copyBtn" onclick="copyURL()">Copy website URL</button>
+    <button>Download Chrome</button>
+  </section>
 
   <!-- SCRIPT -->
   <script>
@@ -160,6 +164,10 @@
       })(!window['safari'] ||
         (typeof safari !== 'undefined' && safari.pushNotification));
 
+    if (isSafari == true) {
+      document.getElementById('main').style.display = "none";
+      document.getElementById('isSafari').style.display = "block";
+    }
 
     function copyTextToClipboard(text) {
       var textArea = document.createElement("textarea");
